@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.13)
 include(lib/pico-sdk/pico_sdk_init.cmake)
 
 set(FW_NAME led_strip_controller)
-set(CMAKE_C_STANDARD 99)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 project(${FW_NAME}
