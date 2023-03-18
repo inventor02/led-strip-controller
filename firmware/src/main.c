@@ -4,6 +4,7 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/sync.h"
+#include "hardware/timer.h"
 
 #include <time.h>
 
@@ -40,7 +41,7 @@ void ir_isr(uint gpio, uint32_t events){
   bool was_high = true;
   busy_wait_ms(2);
   if(gpio_get(PIN_IR) != 0) was_low = false;
-  busy_wait(2);
+  busy_wait_ms(2);
   if(gpio_get(PIN_IR) != 0) was_low = false;
   // Should switch to high now after ~0.5ms
   // Now 1.5ms into high band
