@@ -2,6 +2,10 @@
 #include <time.h>
 
 #include "pico/stdlib.h"
+#include "hardware/gpio.h"
+#include "hardware/sync.h"
+
+#include <time.h>
 
 #include "defs.h"
 
@@ -28,13 +32,41 @@ void self_test() {
 }
 
 void ir_isr(uint gpio, uint32_t events){
-  cli();
+  uint32_t state = save_and_disable_interrupts();
+  // GPIO_GET 0 - low, !=0 high
 
-  // Check start bit
+  // Check start bit - 4.5ms high, 4.5ms low => 4.5ms low, 4.5ms high
+  bool was_low = true;
+  bool was_high = true;
+  busy_wait_ms(2);
+  if(gpio_get(PIN_IR) != 0) was_low = false;
+  busy_wait(2);
+  if(gpio_get(PIN_IR) != 0) was_low = false;
+  // Should switch to high now after ~0.5ms
+  // Now 1.5ms into high band
+  busy_wait_ms(2);
+  if(gpio_get(PIN_IR) == 0) was_high = false;
+  busy_wait_ms(3);
+  if(gpio_get(PIN_IR) == 0) was_high = false;
+
+  uint8_t bits[32];
+  uint32_t code;
+
+  if(was_low && was_high) { // Start bit found
+    for(uint8_t i = 0; i < 32; i++){
+      busy_wait_ms(0.56); // Wait until start of second pulse
+      // 1.69ms high for 1, 0.56ms high for 0
+      busy_wait_ms(0.56);
+      if(gpio_get(PIN_IR) != 0) code += 2^i;// Still high
+      else continue;
+    }
+  } else {
+    restore_interrupts(state);
+    return;
+  }
 
 
   // Store Data
-  uint8_t code;
   
   switch (code)
   {
@@ -57,6 +89,7 @@ void ir_isr(uint gpio, uint32_t events){
   }
 
   write_light_stored_vals();
+  restore_interrupts(state);
 }
 
 void button_on_off_toggle(){
