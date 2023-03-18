@@ -15,4 +15,9 @@ const uint PIN_PWM3 = 20;
 const uint PIN_UART_TX = 13;
 const uint PIN_UART_RX = 12;
 
+const uint POWER_CODE = 0x000;
+const uint RED_CODE   = 0x001;
+const uint GREEN_CODE = 0x002;
+const uint BLUE_CODE  = 0x003;
+
 #endif /* _DEFS_H */

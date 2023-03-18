@@ -5,6 +5,12 @@
 
 #include "defs.h"
 
+// % of full power
+volatile double red_val = 0;
+volatile double green_val = 0;
+volatile double blue_val = 0;
+
+volatile bool lights_on = false;
 
 void init() {
   // setup LED
@@ -21,19 +27,64 @@ void self_test() {
   // TODO
 }
 
-void ir_fall_isr(uint gpio, uint32_t events){
+void ir_isr(uint gpio, uint32_t events){
   cli();
 
   // Check start bit
 
-  sei();
+
+  // Store Data
+  uint8_t code;
+  
+  switch (code)
+  {
+  case POWER_CODE:
+    button_on_off_toggle();
+    break;
+  case RED_CODE:
+    update_val(&red_val);
+    break;
+  case GREEN_CODE:
+    update_val(&green_val);
+    break;
+  case BLUE_CODE:
+    update_val(&blue_val);
+    break;
+  
+  default:
+    write_light_custom_vals(1, 1, 1);
+    break;
+  }
+
+  write_light_stored_vals();
 }
+
+void button_on_off_toggle(){
+  if(!lights_on){
+    // Turn on
+    lights_on = true;
+    // Write the stored values to the lights
+    write_light_stored_vals();
+  } else {
+    lights_on = false;
+    // Don't update the values, just write 0 to all of the lights 
+    write_light_custom_vals(0, 0, 0);
+  }
+}
+
+void update_val(double* val){
+  *val += 0.1;
+  if(*val > 1) *val -= 1;
+}
+
+void write_light_stored_vals(){}
+void write_light_custom_vals(double red, double green, double blue){}
 
 int main() {
   init();
   self_test();
 
-  gpio_set_irq_enabled_with_callback(PIN_IR, GPIO_IRQ_EDGE_FALL, true, &ir_fall_isr);
+  gpio_set_irq_enabled_with_callback(PIN_IR, GPIO_IRQ_EDGE_FALL, true, &ir_isr);
 
   for (;;);
 }
