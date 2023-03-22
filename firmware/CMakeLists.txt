@@ -15,6 +15,6 @@ add_executable(${FW_NAME})
 target_sources(${FW_NAME}
   PRIVATE src/main.c)
 
-target_link_libraries(${FW_NAME} pico_stdlib)
+target_link_libraries(${FW_NAME} pico_stdlib hardware_pwm)
 
 pico_add_extra_outputs(${FW_NAME})
