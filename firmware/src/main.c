@@ -11,11 +11,11 @@
 #include "defs.h"
 
 // % of full power
-volatile double red_val = 0;
-volatile double green_val = 0;
-volatile double blue_val = 0;
+double red_val = 0;
+double green_val = 0;
+double blue_val = 0;
 
-volatile bool lights_on = false;
+bool lights_on = false;
 
 void self_test() {
   // TODO
