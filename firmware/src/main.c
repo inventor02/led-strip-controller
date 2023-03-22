@@ -31,6 +31,9 @@ void set_pwm(double red, double green, double blue) {
   pwm_set_gpio_level(PIN_PWM_BLUE, blue_pwm);
 }
 
+void write_light_stored_vals() {}
+void write_light_custom_vals(double red, double green, double blue) {}
+
 void button_on_off_toggle() {
   if(!lights_on){
     // Turn on
@@ -48,9 +51,6 @@ void update_val(double* val) {
   *val += 0.1;
   if(*val > 1) *val -= 1;
 }
-
-void write_light_stored_vals() {}
-void write_light_custom_vals(double red, double green, double blue) {}
 
 void ir_isr(uint gpio, uint32_t events) {
   uint32_t state = save_and_disable_interrupts();
