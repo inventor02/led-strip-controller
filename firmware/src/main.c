@@ -85,7 +85,7 @@ void ir_isr(uint gpio, uint32_t events) {
       else continue;
     }
   } else {
-    restore_interrupts(state);
+    restore_interrupts(0);
     return;
   }
 
@@ -110,8 +110,10 @@ void ir_isr(uint gpio, uint32_t events) {
       break;
   }
 
+  printf("isr\n");
+
   write_light_stored_vals();
-  restore_interrupts(state);
+  restore_interrupts(0);
 }
 
 void init() {
@@ -145,6 +147,9 @@ void init() {
   pwm_set_enabled(pwm_green_slice, true);
   pwm_set_enabled(pwm_blue_slice, true);
 
+  gpio_init(PIN_IR);
+  gpio_set_dir(PIN_IR, false);
+  gpio_pull_up(PIN_IR);
   gpio_set_irq_enabled_with_callback(PIN_IR, GPIO_IRQ_EDGE_FALL, true, &ir_isr);
 }
 
