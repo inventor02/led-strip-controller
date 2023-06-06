@@ -7,8 +7,10 @@
 #include "hardware/sync.h"
 #include "hardware/timer.h"
 #include "hardware/pwm.h"
+#include "hardware/pio.h"
 
 #include "defs.h"
+#include "samsung.pio.h"
 
 // % of full power
 double red_val = 0;
@@ -16,6 +18,9 @@ double green_val = 0;
 double blue_val = 0;
 
 bool lights_on = false;
+
+static PIO pio = pio0;
+static uint pio_sm;
 
 void self_test() {
   // TODO
@@ -111,7 +116,7 @@ void ir_isr(uint gpio, uint32_t events) {
       break;
   }
 
-  printf("isr\n");
+  printf("%d\n", code);
 
   write_light_stored_vals();
   restore_interrupts(0);
@@ -125,7 +130,7 @@ void init() {
 
   // setup UART
   stdio_uart_init_full(uart0, 115200, PIN_UART_TX, PIN_UART_RX);
-  printf("Hello; LED Strip Controller v%s\n\n", *VERSION);
+  printf("Hello; LED Strip Controller v%s\n\n", VERSION);
 
   // set pins for PWM
   gpio_set_function(PIN_PWM_RED, GPIO_FUNC_PWM);
@@ -148,15 +153,22 @@ void init() {
   pwm_set_enabled(pwm_green_slice, true);
   pwm_set_enabled(pwm_blue_slice, true);
 
-  gpio_init(PIN_IR);
-  gpio_set_dir(PIN_IR, false);
-  gpio_pull_up(PIN_IR);
-  gpio_set_irq_enabled_with_callback(PIN_IR, GPIO_IRQ_EDGE_FALL, true, &ir_isr);
+  // gpio_init(PIN_IR);
+  // gpio_set_dir(PIN_IR, false);
+  // gpio_pull_up(PIN_IR);
+  // gpio_set_irq_enabled_with_callback(PIN_IR, GPIO_IRQ_EDGE_FALL, true, &ir_isr);
+
+  pio_sm = pio_claim_unused_sm(pio, true);
+  uint offset = pio_add_program(pio, &samsung_program);
+  samsung_program_init(pio, pio_sm, offset, PIN_IR);
 }
 
 int main() {
   init();
   self_test();
 
-  for (;;);
+  for (;;) {
+    uint32_t rx = pio_sm_get_blocking(pio, pio_sm);
+    printf("received: %x\n", rx);
+  }
 }
