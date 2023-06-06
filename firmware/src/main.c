@@ -75,9 +75,9 @@ void ir_isr(uint gpio, uint32_t events) {
 
   if (was_low && was_high) { // Start bit found
     for (uint8_t i = 0; i < 32; i++) {
-      busy_wait_ms(0.56); // Wait until start of second pulse
+      busy_wait_us(560); // Wait until start of second pulse
       // 1.69ms high for 1, 0.56ms high for 0
-      busy_wait_ms(0.56);
+      busy_wait_us(560);
       if (gpio_get(PIN_IR) != 0) code += 2^i; // Still high
       else continue;
     }
