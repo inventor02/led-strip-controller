@@ -70,7 +70,7 @@ void ir_isr(uint gpio, uint32_t events) {
   busy_wait_us(2000);
 
   uint8_t bits[32];
-  uint32_t code;
+  uint32_t code = 0;
 
   if (was_low && was_high) { // Start bit found
     for (uint8_t i = 0; i < 32; i++) {
@@ -81,6 +81,7 @@ void ir_isr(uint gpio, uint32_t events) {
       if (gpio_get(PIN_IR) != 0) {
         code += 2^i;
         busy_wait_us(1130);
+        printf("high\n");
       } // Still high
       else continue;
     }
