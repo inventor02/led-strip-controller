@@ -62,13 +62,12 @@ void ir_isr(uint gpio, uint32_t events) {
   busy_wait_ms(2);
   if (gpio_get(PIN_IR) != 0) was_low = false;
   busy_wait_us(4500);
-  if (gpio_get(PIN_IR) != 0) was_low = false;
   // Should switch to high now after ~0.5ms
   // Now 1.5ms into high band
-  busy_wait_ms(2);
   if (gpio_get(PIN_IR) == 0) was_high = false;
-  busy_wait_ms(3);
-  if (gpio_get(PIN_IR) == 0) was_high = false;
+
+  // Now at ~6.5ms
+  busy_wait_us(2000);
 
   uint8_t bits[32];
   uint32_t code;
@@ -77,8 +76,12 @@ void ir_isr(uint gpio, uint32_t events) {
     for (uint8_t i = 0; i < 32; i++) {
       busy_wait_us(560); // Wait until start of second pulse
       // 1.69ms high for 1, 0.56ms high for 0
+      
       busy_wait_us(560);
-      if (gpio_get(PIN_IR) != 0) code += 2^i; // Still high
+      if (gpio_get(PIN_IR) != 0) {
+        code += 2^i;
+        busy_wait_us(1130);
+      } // Still high
       else continue;
     }
   } else {
