@@ -13,8 +13,10 @@ pico_sdk_init()
 add_executable(${FW_NAME})
 
 target_sources(${FW_NAME}
-  PRIVATE src/main.c)
+  PRIVATE src/main.c src/samsung.pio.c)
 
-target_link_libraries(${FW_NAME} pico_stdlib hardware_pwm)
+pico_generate_pio_header(${FW_NAME} ${CMAKE_CURRENT_LIST_DIR}/src/samsung.pio)
+
+target_link_libraries(${FW_NAME} pico_stdlib hardware_pwm hardware_pio hardware_clocks)
 
 pico_add_extra_outputs(${FW_NAME})
