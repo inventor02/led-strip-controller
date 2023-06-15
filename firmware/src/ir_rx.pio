@@ -1,0 +1,48 @@
+.program ir_rx
+
+; the TSOP2438 is active low, so where we say "low" this is actually a high
+; that was transmitted, and vice versa
+
+; 10 clock cycles per short low (560us)
+.define public TSHORT 10
+
+; timeout
+; theoretically there is about 70 cycles for half the sync bit
+.define TLOOP 50
+
+; time between samples for one bit
+.define TREAD 15
+
+await:
+    ; reset the timer
+    set X TREAD
+    ; wait until the pin goes low
+    wait 0 pin 0
+
+loop:
+    ; if the pin has gone high, what bit did we get?
+    jmp pin read
+    ; otherwise, we start counting down - this might be a sync bit
+    jmp X-- loop
+
+    ; timed out, clear the ISR
+    mov ISR NULL
+    ; wait for the pin to go high again (i.e. for the sync/bad bit to be over)
+    wait 1 pin 0
+    ; start again
+    jmp await
+
+read:
+    ; wait until 1.5x the length of a short low
+    nop [TREAD - 1]
+    ; if the pin is still high, this is a 1
+    ; otherwise, it's gone low, and we're halfway through the next bit, so this is a 0
+    in pins 1
+
+; ** total instructions 9
+
+% c-sdk {
+
+void ir_rx_program_init(PIO pio, uint sm, uint offset, uint gpio);
+
+%}

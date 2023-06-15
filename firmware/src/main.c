@@ -10,7 +10,7 @@
 #include "hardware/pio.h"
 
 #include "defs.h"
-#include "samsung.pio.h"
+#include "ir_rx.pio.h"
 
 // % of full power
 double red_val = 0;
@@ -153,14 +153,11 @@ void init() {
   pwm_set_enabled(pwm_green_slice, true);
   pwm_set_enabled(pwm_blue_slice, true);
 
-  // gpio_init(PIN_IR);
-  // gpio_set_dir(PIN_IR, false);
-  // gpio_pull_up(PIN_IR);
-  // gpio_set_irq_enabled_with_callback(PIN_IR, GPIO_IRQ_EDGE_FALL, true, &ir_isr);
-
   pio_sm = pio_claim_unused_sm(pio, true);
-  uint offset = pio_add_program(pio, &samsung_program);
-  samsung_program_init(pio, pio_sm, offset, PIN_IR);
+  uint offset = pio_add_program(pio, &ir_rx_program);
+  ir_rx_program_init(pio, pio_sm, offset, PIN_IR);
+
+  printf("Initialisation complete\n");
 }
 
 int main() {
